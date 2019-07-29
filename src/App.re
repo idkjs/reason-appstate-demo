@@ -18,15 +18,14 @@ let styles =
 module Demo = {
   [@react.component]
   let make = () => {
-    let (appState, setAppState) = React.useState(() => AppState.currentState);
-    Js.log(appState);
+    let (appState, setAppState) = React.useState(_ => AppState.currentState);
 
-    let handleAppStateChange = (nextAppState: AppState.t) => {
-      Js.log2("nextAppState: ", nextAppState);
-      Js.log2("appState: ", appState);
+    let handleAppStateChange = nextAppState => {
       switch (appState, nextAppState) {
-      | (_background, _active) => Js.log("App has come to the foreground!")
-      | (_inactive, _active) => Js.log("App has come to the foreground!")
+      | (_, state) when state === AppState.background =>
+        Js.log("App has come to the background!")
+      | (_, state) when state === AppState.active =>
+        Js.log("App has come to the foreground!")
       | _ => ()
       };
       setAppState(_ => nextAppState);
@@ -47,9 +46,10 @@ module Demo = {
 
     let renderAppState =
       switch (appState) {
-      | _active => "active"
-      | _background => "background"
-      | _inactive => "inactive"
+      | appState when appState === AppState.active => "active"
+      | appState when appState === AppState.background => "background"
+      | appState when appState === AppState.inactive => "inactive"
+      | _ => "unknown"
       };
     <Text> {"Current state is: " ++ renderAppState |> React.string} </Text>;
   };
@@ -62,8 +62,6 @@ let app = () =>
       start=[|0.0, 0.0|]
       _end=[|1.0, 1.0|]
       style=Style.(style(~padding=dp(12.), ~borderRadius=12., ()))>
-      <View style=styles##instructions>
-        <Demo />
-      </View>
+      <View style=styles##instructions> <Demo /> </View>
     </LinearGradient>
   </View>;
